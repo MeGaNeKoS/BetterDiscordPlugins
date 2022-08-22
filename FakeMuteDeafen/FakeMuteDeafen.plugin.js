@@ -1,7 +1,6 @@
 /**
  * @name Fake Mutes/Deafen
  * @author MeGaNeKo
- * @authorId 440838174219042826
  * @description I didn't hear anything... I swear
  * @version 0.0.1
  * @updateUrl https://raw.githubusercontent.com/MeGaNeKoS/BetterDiscordPlugins/main/FakeMuteDeafen/FakeMuteDeafen.plugin.js
@@ -10,7 +9,7 @@
 const decoder = new TextDecoder("utf-8");
 
 let app_mode = 0; // change how it stuck to. Valid value are 0 (deafen/mute), 1(deafen), 2(normal)
-let last_channel = null
+let last_channel = null // to avoid the discord reannounce status.
 
 if (WebSocket.prototype.original == undefined) {
     // store the original WebSocket
@@ -48,6 +47,7 @@ WebSocket.prototype.send_modded = function(data) {
         }
         if (decoder.decode(data)
             .includes("channel_idm\u0000\u0000\u0000")) {
+
             // we detect a voice channel in the data
             // store the new channel
             start = decoder.decode(data)
@@ -60,11 +60,11 @@ WebSocket.prototype.send_modded = function(data) {
     WebSocket.prototype.original.apply(this, [data]);
 }
 
-module.exports = class ExamplePlugin {
+module.exports = class FakeMuteDeafen {
     constructor(meta) {
         const mySettings = {
-            mode: 0,
-        };
+			mode: 0
+		}
 		// app_mode = mySettings.mode
     }
 	
@@ -104,12 +104,21 @@ module.exports = class ExamplePlugin {
 		option3.value = 2;
 		option3.text = "Normal";
 		buttonTextInput.appendChild(option3);
-
+		buttonTextInput.addEventListener("change", () => {
+			app_mode = buttonTextInput.value
+			// save the config
+		})
+		for (const options of buttonTextInput.options){
+			if (options.value == app_mode) {
+				options.selected = "selected"
+			} else {
+				options.selected = ""
+			}
+		}
         buttonTextSetting.append(buttonTextLabel, buttonTextInput);
-
+		
         mySettingsPanel.append(buttonTextSetting);
-		
-		
+
         return mySettingsPanel;
     }
 }
