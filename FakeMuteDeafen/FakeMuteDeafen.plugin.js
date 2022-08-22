@@ -1,6 +1,7 @@
 /**
  * @name Fake Mutes/Deafen
  * @author MeGaNeKo
+ * @authorId 440838174219042826
  * @description I didn't hear anything... I swear
  * @version 0.0.1
  * @updateUrl https://raw.githubusercontent.com/MeGaNeKoS/BetterDiscordPlugins/main/FakeMuteDeafen/FakeMuteDeafen.plugin.js
