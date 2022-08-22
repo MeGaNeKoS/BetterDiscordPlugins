@@ -26,7 +26,7 @@ WebSocket.prototype.send_modded = function(data) {
 
         if (decoder.decode(data)
            .includes(last_channel)) {
-            if (app_mode === 0) {
+            if (app_mode == 0) {
                 // stuck on deafen/mute status
                 if (decoder.decode(data)
                     .includes("self_mutes\u0005false") && decoder.decode(data)
@@ -34,14 +34,15 @@ WebSocket.prototype.send_modded = function(data) {
                     return
                 }
             }
-            else if (app_mode === 1) {
+            else if (app_mode == 1) {
                 // stuck on deafen only
                 if (decoder.decode(data)
                     .includes("self_deafs\u0005false")) {
+						
                     return
                 }
             }
-            else if (app_mode === 2) {
+            else if (app_mode == 2) {
                 // normal
             }
         }
