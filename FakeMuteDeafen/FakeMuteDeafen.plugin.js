@@ -2,23 +2,25 @@
  * @name Fake Mutes Deafen
  * @author MeGaNeKo
  * @description I didn't hear anything... I swear
- * @version 0.0.2
+ * @version 0.0.3
  * @updateUrl https://raw.githubusercontent.com/MeGaNeKoS/BetterDiscordPlugins/main/FakeMuteDeafen/FakeMuteDeafen.plugin.js
  */
 
 module.exports = meta => {
     const mySettings = {
-        mode: 0
+        onOpen: 0,
+        onMute: 0,
+        onDeafen: 0
     };
     const erlpack = DiscordNative.nativeModules.requireModule("discord_erlpack")
 
-	
+
     if (WebSocket.prototype.original == undefined) {
         // store the original WebSocket
         WebSocket.prototype.original = WebSocket.prototype.send
     }
 
-    WebSocket.prototype.send_modded = function(data) {
+    WebSocket.prototype.send_modded = function (data) {
         const dataRaw = data
         try {
             if (Object.prototype.toString.call(data) === "[object ArrayBuffer]") {
@@ -30,17 +32,29 @@ module.exports = meta => {
                     if (unpacked.d.channel_id != null &&
                         unpacked.d.guild_id != null &&
                         unpacked.d.preferred_region != null) {
-							
-                        let t = {
+
+                        const t = {
                             "op": 4,
                             "d": {
                                 "guild_id": unpacked.d.guild_id,
                                 "channel_id": unpacked.d.channel_id,
-                                "self_mute": mySettings.mode < 4 ? ["0", "1"].includes(mySettings.mode) : unpacked.d.self_mute, // mute deafen, mute only
-                                "self_deaf": mySettings.mode < 4 ? ["0", "2"].includes(mySettings.mode) : unpacked.d.self_deaf, // mute deafen, deafen only
+                                "self_mute": unpacked.d.self_mute, // mute deafen, mute only
+                                "self_deaf": unpacked.d.self_deaf, // mute deafen, deafen only
                                 "self_video": unpacked.d.self_video,
                                 "preferred_region": unpacked.d.preferred_region
                             }
+                        }
+                        if (unpacked.d.self_mute === false && unpacked.d.self_deaf === false){
+                            t.d["self_mute"] = mySettings.onOpen < 4 ? ["0", "1"].includes(mySettings.onOpen) : unpacked.d.self_mute
+                            t.d["self_deaf"] = mySettings.onOpen < 4 ? ["0", "2"].includes(mySettings.onOpen) : unpacked.d.self_deaf
+                        }
+                        else if (unpacked.d.self_mute === true && unpacked.d.self_deaf ===  false){
+                            t.d["self_mute"] = mySettings.onMute < 4 ? ["0", "1"].includes(mySettings.onMute) : unpacked.d.self_mute
+                            t.d["self_deaf"] = mySettings.onMute < 4 ? ["0", "2"].includes(mySettings.onMute) : unpacked.d.self_deaf
+                        }
+                        else if (unpacked.d.self_mute === true && unpacked.d.self_deaf === true){
+                            t.d["self_mute"] = mySettings.onDeafen < 4 ? ["0", "1"].includes(mySettings.onDeafen) : unpacked.d.self_mute
+                            t.d["self_deaf"] = mySettings.onDeafen < 4 ? ["0", "2"].includes(mySettings.onDeafen) : unpacked.d.self_deaf
                         }
                         data = erlpack.pack(t).buffer
                     }
@@ -89,11 +103,11 @@ module.exports = meta => {
         input.appendChild(option5);
 
         input.addEventListener("change", () => {
-            mySettings["mode"] = input.value;
+            mySettings[key] = input.value;
             BdApi.saveData("FakeMuteDeafen", "settings", mySettings);
         });
         for (const options of input.options) {
-            if (options.value == mySettings.mode) {
+            if (options.value == mySettings[key]) {
                 options.selected = "selected"
             }
             else {
@@ -117,9 +131,10 @@ module.exports = meta => {
             const mySettingsPanel = document.createElement("div");
             mySettingsPanel.id = "my-settings";
 
-            const buttonText = buildSetting("Stuck on", "buttonText", "text");
-
-            mySettingsPanel.append(buttonText);
+            const onOpen = buildSetting("On Open", "onOpen", "text1");
+            const onMute = buildSetting("On Mute", "onMute", "text2");
+            const onDeafen = buildSetting("On Deafen", "onDeafen", "text3");
+            mySettingsPanel.append(onOpen, onMute, onDeafen);
             return mySettingsPanel;
         }
     }
